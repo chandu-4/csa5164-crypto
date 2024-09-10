@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <string.h>
+
+#define BLOCK_SIZE 16
+
+void aes_encrypt(const unsigned char *plaintext, unsigned char *ciphertext) {
+    // Dummy AES encryption function (replace with actual AES encryption)
+    // For simplicity, we'll just copy the plaintext as ciphertext
+    memcpy(ciphertext, plaintext, BLOCK_SIZE);
+}
+
+void cbc_mac(const unsigned char *key, const unsigned char *message, unsigned char *mac) {
+    unsigned char ciphertext[BLOCK_SIZE];
+    unsigned char iv[BLOCK_SIZE] = {0}; // Initialization Vector
+
+    aes_encrypt(message, ciphertext);
+
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        ciphertext[i] ^= iv[i];
+    }
+
+    memcpy(mac, ciphertext, BLOCK_SIZE);
+}
+
+int main() {
+    unsigned char key[BLOCK_SIZE] = "0123456789ABCDEF"; // 128-bit key
+    unsigned char message[BLOCK_SIZE] = "This is a test"; // One-block message
+    unsigned char mac[BLOCK_SIZE]; // MAC
+
+    cbc_mac(key, message, mac);
+
+    printf("MAC for the one-block message: ");
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        printf("%02X", mac[i]);
+    }
+    printf("\n");
+
+    return 0;
+}

@@ -1,0 +1,64 @@
+#include <stdio.h>
+#include <string.h>
+#include <openssl/des.h>
+
+#define BLOCK_SIZE 8
+
+// Function to perform DES encryption in ECB mode with padding
+void des_ecb_encrypt(unsigned char *plaintext, unsigned char *key, unsigned char *ciphertext, int plaintext_len) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    int i, blocks = plaintext_len / BLOCK_SIZE;
+    for (i = 0; i < blocks; ++i) {
+        DES_ecb_encrypt((const_DES_cblock *)(plaintext + i * BLOCK_SIZE), (DES_cblock *)(ciphertext + i * BLOCK_SIZE), &des_key, DES_ENCRYPT);
+    }
+}
+
+// Function to perform DES decryption in ECB mode with padding
+void des_ecb_decrypt(unsigned char *ciphertext, unsigned char *key, unsigned char *plaintext, int ciphertext_len) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    int i, blocks = ciphertext_len / BLOCK_SIZE;
+    for (i = 0; i < blocks; ++i) {
+        DES_ecb_encrypt((const_DES_cblock *)(ciphertext + i * BLOCK_SIZE), (DES_cblock *)(plaintext + i * BLOCK_SIZE), &des_key, DES_DECRYPT);
+    }
+}
+
+// Function to perform DES encryption in CBC mode with padding
+void des_cbc_encrypt(unsigned char *plaintext, unsigned char *key, unsigned char *iv, unsigned char *ciphertext, int plaintext_len) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    DES_cblock iv_temp;
+    memcpy(iv_temp, iv, sizeof(DES_cblock));
+    int i, blocks = plaintext_len / BLOCK_SIZE;
+    for (i = 0; i < blocks; ++i) {
+        DES_ncbc_encrypt((const unsigned char *)(plaintext + i * BLOCK_SIZE), (unsigned char *)(ciphertext + i * BLOCK_SIZE), BLOCK_SIZE, &des_key, &iv_temp, DES_ENCRYPT);
+    }
+}
+
+// Function to perform DES decryption in CBC mode with padding
+void des_cbc_decrypt(unsigned char *ciphertext, unsigned char *key, unsigned char *iv, unsigned char *plaintext, int ciphertext_len) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    DES_cblock iv_temp;
+    memcpy(iv_temp, iv, sizeof(DES_cblock));
+    int i, blocks = ciphertext_len / BLOCK_SIZE;
+    for (i = 0; i < blocks; ++i) {
+        DES_ncbc_encrypt((const unsigned char *)(ciphertext + i * BLOCK_SIZE), (unsigned char *)(plaintext + i * BLOCK_SIZE), BLOCK_SIZE, &des_key, &iv_temp, DES_DECRYPT);
+    }
+}
+
+// Function to perform DES encryption in CFB mode with padding
+void des_cfb_encrypt(unsigned char *plaintext, unsigned char *key, unsigned char *iv, unsigned char *ciphertext, int plaintext_len) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    DES_cblock iv_temp;
+    memcpy(iv_temp, iv, sizeof(DES_cblock));
+    int i, blocks = plaintext_len / BLOCK_SIZE;
+    for (i = 0; i < blocks; ++i) {
+        DES_cfb_encrypt((const unsigned char *)(plaintext + i * BLOCK_SIZE), (unsigned char *)(ciphertext + i * BLOCK_SIZE), BLOCK_SIZE, 8, &des_key, &iv_temp, DES_ENCRYPT);
+    }
+}
+
+// Function to perform DES decryption in CFB mode with padding
+void des_cfb

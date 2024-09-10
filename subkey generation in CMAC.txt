@@ -1,0 +1,97 @@
+#include <stdio.h>
+
+// Function to perform left circular shift on a byte
+unsigned char left_rotate(unsigned char byte) {
+    return (byte << 1) | (byte >> 7);
+}
+
+// Function to generate subkeys in CMAC
+void generate_subkeys(unsigned char *initial_key, unsigned char *subkey1, unsigned char *subkey2, int block_size) {
+    // Apply block cipher to a block consisting of all zeros
+    unsigned char block[block_size];
+    for (int i = 0; i < block_size; i++) {
+        block[i] = 0x00; // Block consisting of all zeros
+    }
+
+    // Apply block cipher (dummy operation)
+    // For simplicity, we'll just copy the input key as the subkey
+    for (int i = 0; i < block_size; i++) {
+        subkey1[i] = initial_key[i];
+    }
+
+    // Left shift the first subkey by one bit
+    for (int i = 0; i < block_size; i++) {
+        subkey1[i] = left_rotate(subkey1[i]);
+    }
+
+    // Conditionally XOR the constant based on block size
+    unsigned char constant;
+    if (block_size == 64) {
+        constant = 0x1B;
+    } else if (block_size == 128) {
+        constant = 0x87;
+    } else {
+        printf("Invalid block size.\n");
+        return;
+    }
+
+    // XOR the constant with the first subkey (conditionally)
+    if (subkey1[0] & 0x80) {
+        subkey1[block_size - 1] ^= constant;
+    }
+
+    // If the most significant bit of the first subkey is set, apply conditional XOR for second subkey
+    if (subkey1[0] & 0x80) {
+        // Left shift the first subkey by one bit
+        for (int i = 0; i < block_size; i++) {
+            subkey2[i] = left_rotate(subkey1[i]);
+        }
+
+        // Conditionally XOR the constant with the second subkey
+        subkey2[block_size - 1] ^= constant;
+    } else {
+        // Second subkey is simply the left-shifted first subkey
+        for (int i = 0; i < block_size; i++) {
+            subkey2[i] = subkey1[i];
+        }
+    }
+}
+
+int main() {
+    unsigned char initial_key_64[8] = {0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6}; // 64-bit initial key
+    unsigned char initial_key_128[16] = {0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x97, 0x1F, 0x76, 0xA3, 0x96, 0xB5}; // 128-bit initial key
+    unsigned char subkey1_64[8], subkey2_64[8]; // Subkeys for 64-bit block size
+    unsigned char subkey1_128[16], subkey2_128[16]; // Subkeys for 128-bit block size
+
+    // Generate subkeys for 64-bit block size
+    generate_subkeys(initial_key_64, subkey1_64, subkey2_64, 8);
+
+    printf("Subkey 1 for 64-bit block size: ");
+    for (int i = 0; i < 8; i++) {
+        printf("%02X ", subkey1_64[i]);
+    }
+    printf("\n");
+
+    printf("Subkey 2 for 64-bit block size: ");
+    for (int i = 0; i < 8; i++) {
+        printf("%02X ", subkey2_64[i]);
+    }
+    printf("\n\n");
+
+    // Generate subkeys for 128-bit block size
+    generate_subkeys(initial_key_128, subkey1_128, subkey2_128, 16);
+
+    printf("Subkey 1 for 128-bit block size: ");
+    for (int i = 0; i < 16; i++) {
+        printf("%02X ", subkey1_128[i]);
+    }
+    printf("\n");
+
+    printf("Subkey 2 for 128-bit block size: ");
+    for (int i = 0; i < 16; i++) {
+        printf("%02X ", subkey2_128[i]);
+    }
+    printf("\n");
+
+    return 0;
+}

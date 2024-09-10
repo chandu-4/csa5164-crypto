@@ -1,0 +1,42 @@
+#include <stdio.h>
+#include <string.h>
+#include <openssl/des.h>
+
+// Function to perform DES encryption
+void des_encrypt(unsigned char *plaintext, unsigned char *key, unsigned char *ciphertext) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    DES_ecb_encrypt((const_DES_cblock *)plaintext, (DES_cblock *)ciphertext, &des_key, DES_ENCRYPT);
+}
+
+// Function to perform DES decryption
+void des_decrypt(unsigned char *ciphertext, unsigned char *key, unsigned char *plaintext) {
+    DES_key_schedule des_key;
+    DES_set_key_checked((const_DES_cblock *)key, &des_key);
+    DES_ecb_encrypt((const_DES_cblock *)ciphertext, (DES_cblock *)plaintext, &des_key, DES_DECRYPT);
+}
+
+int main() {
+    unsigned char plaintext[8] = "ABCDEFG";
+    unsigned char key[8] = "1234567";
+    unsigned char ciphertext[8];
+    unsigned char decryptedtext[8];
+
+    // Encrypt the plaintext
+    des_encrypt(plaintext, key, ciphertext);
+
+    // Decrypt the ciphertext
+    des_decrypt(ciphertext, key, decryptedtext);
+
+    // Print the results
+    printf("Plaintext: %s\n", plaintext);
+    printf("Key: %s\n", key);
+    printf("Ciphertext: ");
+    for (int i = 0; i < 8; i++) {
+        printf("%02X ", ciphertext[i]);
+    }
+    printf("\n");
+    printf("Decrypted text: %s\n", decryptedtext);
+
+    return 0;
+}

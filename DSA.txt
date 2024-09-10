@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <openssl/dsa.h>
+#include <openssl/err.h>
+
+#define MESSAGE "This is a test message for signing"
+
+int main() {
+    DSA *dsa = NULL;
+    unsigned char *sig1 = NULL;
+    unsigned char *sig2 = NULL;
+    unsigned int sig1_len, sig2_len;
+    const unsigned char *message = (const unsigned char *)MESSAGE;
+    int message_len = strlen(MESSAGE);
+
+    // Initialize DSA context
+    dsa = DSA_generate_parameters(1024, NULL, 0, NULL, NULL, NULL, NULL);
+    DSA_generate_key(dsa);
+
+    // Allocate memory for signatures
+    sig1 = (unsigned char *)malloc(DSA_size(dsa));
+    sig2 = (unsigned char *)malloc(DSA_size(dsa));
+
+    // Sign the message twice
+    DSA_sign(0, message, message_len, sig1, &sig1_len, dsa);
+    DSA_sign(0, message, message_len, sig2, &sig2_len, dsa);
+
+    // Verify the signatures
+    int ver1 = DSA_verify(0, message, message_len, sig1, sig1_len, dsa);
+    int ver2 = DSA_verify(0, message, message_len, sig2, sig2_len, dsa);
+
+    if (ver1 == 1 && ver2 == 1) {
+        printf("Signatures are valid.\n");
+    } else {
+        printf("Signatures are not valid.\n");
+    }
+
+    // Clean up
+    DSA_free(dsa);
+    free(sig1);
+    free(sig2);
+    ERR_free_strings();
+
+    return 0;
+}
